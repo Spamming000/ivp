@@ -1,0 +1,4 @@
+given an aerial image of a city as Satellit_image.jpg and the coreesponing output expected is given as sim.jpg,apply necessary image preprocessing techniques to highlight the roads in the given satellite and extract yor predicted masks.compare the predicaated and actual masks using appropriate performance metrics and write your inference
+
+https://stackoverflow.com/questions/62623836/simple-way-to-detect-street-area-in-google-map-images-aerial-images
+https://github.com/Paulymorphous/skeyenet/blob/master/Src/Road_Detection_GPU.ipynb
