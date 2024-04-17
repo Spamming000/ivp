@@ -1,0 +1,33 @@
+from tensorflow.keras.models import load_model
+from tensorflow.keras.utils import normalize
+import cv2
+import numpy as np
+
+# Load the satellite image and resize it to the expected input size of the U-Net
+satellite_img = cv2.imread('/path/to/Satellit_image.jpg')
+satellite_img_resized = cv2.resize(satellite_img, (256, 256)) # Example size
+satellite_img_normalized = normalize(satellite_img_resized, axis=1)
+
+# Prepare the image for the model (add batch dimension)
+satellite_img_normalized = np.expand_dims(satellite_img_normalized, axis=0)
+
+# Load your pre-trained U-Net model
+model = load_model('/path/to/unet_model.h5')
+
+# Predict the mask
+predicted_mask = model.predict(satellite_img_normalized)[0]
+
+# Threshold the predictions to create a binary mask
+thresholded_mask = predicted_mask > 0.5
+
+# Resize mask back to original size
+thresholded_mask_resized = cv2.resize(thresholded_mask.astype(np.uint8), (satellite_img.shape[1], satellite_img.shape[0]))
+
+# Overlay the mask on the original image
+road_highlighted = satellite_img.copy()
+road_highlighted[thresholded_mask_resized == 1] = (0, 0, 255) # Example color
+
+# Save the resulting image
+cv2.imwrite('/path/to/road_highlighted.jpg', road_highlighted)
+
+# If you have the ground truth mask, you can calculate the IoU score as well
