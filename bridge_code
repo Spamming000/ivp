@@ -1,0 +1,51 @@
+import cv2
+import numpy as np
+
+# Load the image
+image = cv2.imread('bridge_image.jpg')
+
+# Convert the image to grayscale
+gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+# Apply histogram equalization to enhance contrast
+equalized_image = cv2.equalizeHist(gray_image)
+
+# Apply Gaussian blur to reduce noise
+blurred_image = cv2.GaussianBlur(equalized_image, (5, 5), 0)
+
+# Apply Canny edge detection to detect edges
+edges = cv2.Canny(blurred_image, 30, 150)
+
+# Find contours in the edges
+contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+# Create empty mask images for high intensity and low intensity cracks
+high_intensity_mask = np.zeros_like(gray_image)
+low_intensity_mask = np.zeros_like(gray_image)
+
+# Define threshold values for intensity
+high_intensity_threshold = 200
+low_intensity_threshold = 100
+
+# Iterate through contours and classify them based on intensity
+for contour in contours:
+    # Calculate average intensity within contour region
+    mask = np.zeros_like(gray_image)
+    cv2.drawContours(mask, [contour], -1, 255, -1)
+    mean_intensity = cv2.mean(blurred_image, mask=mask)[0]
+    
+    # Classify contours based on intensity
+    if mean_intensity > high_intensity_threshold:
+        cv2.drawContours(high_intensity_mask, [contour], -1, 255, -1)
+    elif mean_intensity > low_intensity_threshold:
+        cv2.drawContours(low_intensity_mask, [contour], -1, 255, -1)
+
+# Save the masks
+cv2.imwrite('high_intensity_cracks_mask.jpg', high_intensity_mask)
+cv2.imwrite('low_intensity_cracks_mask.jpg', low_intensity_mask)
+
+# Display the masks
+cv2.imshow('High Intensity Cracks Mask', high_intensity_mask)
+cv2.imshow('Low Intensity Cracks Mask', low_intensity_mask)
+cv2.waitKey(0)
+cv2.destroyAllWindows()
